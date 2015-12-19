@@ -85,7 +85,8 @@ module PdfHelper
       render_opts.merge!(:file => options[:file]) if options[:file]
       render(render_opts)
     else
-      pdf_content = make_pdf(options)
+      # monkey patch hotfix for blank fields when printing
+      pdf_content = make_pdf(options).gsub('/Ff 0' + "\n", '/F  4' + "\n")
       File.open(options[:save_to_file], 'wb') { |file| file << pdf_content } if options[:save_to_file]
       send_data(pdf_content, :filename => pdf_name + '.pdf', :type => 'application/pdf', :disposition => options[:disposition]) unless options[:save_only]
     end
