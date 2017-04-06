@@ -5,7 +5,7 @@ module WickedPdfHelper
     ASSET_URL_REGEX = /url\(['"]?([^'"]+?)['"]?\)/
 
     def wicked_pdf_asset_base64(path)
-      asset = Rails.application.assets.find_asset(path)
+      asset = find_asset(path)
       throw "Could not find asset '#{path}'" if asset.nil?
       base64 = Base64.encode64(asset.to_s).gsub(/\s+/, '')
       "data:#{asset.content_type};base64,#{Rack::Utils.escape(base64)}"
@@ -65,7 +65,7 @@ module WickedPdfHelper
           File.join(Rails.public_path, asset_path(source).sub(/\A#{Rails.application.config.action_controller.relative_url_root}/, ''))
         end
       else
-        Rails.application.assets.find_asset(source).pathname
+        find_asset(source).pathname
       end
     end
 
@@ -93,7 +93,7 @@ module WickedPdfHelper
           IO.read(asset_pathname(source))
         end
       else
-        Rails.application.assets.find_asset(source).to_s
+        find_asset(source).to_s
       end
     end
 
@@ -111,8 +111,16 @@ module WickedPdfHelper
     rescue Zlib::GzipFile::Error
     end
 
+    def find_asset(path)
+      if Rails.application.assets.respond_to?(:find_asset)
+        Rails.application.assets.find_asset(path)
+      else
+        Sprockets::Railtie.build_environment(Rails.application).find_asset(path)
+      end
+    end
+
     def asset_exists?(source)
-      Rails.application.assets.find_asset(source).present?
+      find_asset(source).present?
     end
   end
 end
