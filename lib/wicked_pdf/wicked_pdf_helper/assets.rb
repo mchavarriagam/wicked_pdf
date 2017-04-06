@@ -115,7 +115,7 @@ module WickedPdfHelper
       if Rails.application.assets.respond_to?(:find_asset)
         Rails.application.assets.find_asset(path)
       else
-        Sprockets::Railtie.build_environment(Rails.application).find_asset(path)
+        Rails.application.config.assets.find_asset(path)
       end
     end
 
